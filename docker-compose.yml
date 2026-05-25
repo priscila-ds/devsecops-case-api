@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    networks:
+      - devsecops-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - devsecops-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./monitoring/grafana:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - devsecops-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14250:14250"
+    networks:
+      - devsecops-network
+
+networks:
+  devsecops-network:
+    driver: bridge
